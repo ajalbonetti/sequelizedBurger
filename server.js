@@ -1,30 +1,33 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var methodOverride = require('method-override')
-
+var methodOverride = require('method-override');
+var path = require('path');
+var bRoutes = require('./controllers/burgers_controller.js');
 var app = express();
-//Serve static content for the app from the "public" directory in the application directory.
-app.use(express.static(__dirname + '/public'));
+var models = require('./models');
+var sequelizeConnection = models.sequelize
 
-// parse application/x-www-form-urlencoded
+
+app.set('port', (process.env.PORT || 3000));
+
+
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(bodyParser.urlencoded({
 	extended: false
-}))
-// override with POST having ?_method=DELETE
-app.use(methodOverride('_method'))
+}));
+
+app.use(methodOverride('_method'));
 var exphbs = require('express-handlebars');
 app.engine('handlebars', exphbs({
-    defaultLayout: 'main'
+	defaultLayout: 'main'
 }));
 app.set('view engine', 'handlebars');
 
-var routes = require('./controllers/burgers_controller.js');
 
-app.use('/', routes);
-app.use('/update', routes);
-app.use('/create', routes);
+bRoutes(app,models);
 
-var port = 3000;
-app.listen(port);
 
-console.log(module.exports)
+app.listen(app.get('port'), function () {
+	console.log('App listening on PORT ', app.get('port'));
+});
